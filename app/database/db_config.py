@@ -1,19 +1,25 @@
-
-
 import os
+from typing import Generator, Optional
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from app.core.settings import get_settings
 
-# PostgreSQL database URI (example: "postgresql://username:password@localhost/db_name")
-DATABASE_URL = os.getenv('DATABASE_URL')
+settings = get_settings()
 
-# Create database engine
-engine = create_engine("postgresql://postgres:postgreselectric117@localhost:5432/FAST_API_TEST")
+# Prefer env-provided URL, fallback for local dev if absent
+database_url: Optional[str] = os.getenv("DATABASE_URL") or (str(settings.DATABASE_URL) if settings.DATABASE_URL else None)
+if not database_url:
+    # Safe local default (SQLite). Users can override via .env
+    database_url = "sqlite:///./app.db"
+
+# Create database engine (sync). For SQLite enable check_same_thread.
+engine_kwargs = {}
+if database_url.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+engine = create_engine(database_url, **engine_kwargs)
 
 
 # Session and Base for SQLAlchemy
@@ -21,7 +27,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Dependency to get the database session
-def get_db():
+def get_db() -> Generator:
     db = SessionLocal()
     try:
         yield db
@@ -35,42 +41,3 @@ def create_database():
 
 if __name__ == "__main__":
     create_database()
-
-
-
-# TO CREATE SQLITE DATABASE
-
-# import os
-# from sqlalchemy import create_engine
-# from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import sessionmaker
-# from dotenv import load_dotenv
-
-# # Load environment variables
-# load_dotenv()
-
-# # SQLite database URI (example: "sqlite:///./.db")
-# DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./power.db')  # Use default SQLite URL if not set in .env
-
-# # Create database engine (SQLite will automatically create the database file if it doesn't exist)
-# engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # Required for SQLite
-
-# # Session and Base for SQLAlchemy
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
-
-# # Dependency to get the database session
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
-# # Create the tables automatically (this should be run once to initialize the database)
-# def create_database():
-#     Base.metadata.create_all(bind=engine)
-
-# # Optionally, call the create_database function to initialize the database
-# if __name__ == "__main__":
-#     create_database()
