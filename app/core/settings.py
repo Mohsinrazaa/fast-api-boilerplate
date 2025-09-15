@@ -1,13 +1,10 @@
 from functools import lru_cache
 from typing import List, Optional
-
 from pydantic import AnyUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
-
     # App
     ENV: str = Field(default="development")
     DEBUG: bool = Field(default=True)
@@ -27,7 +24,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: Optional[AnyUrl] = None
 
-    # External Providers (placeholders for existing code)
+    # External
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     GOOGLE_REDIRECT_URI: Optional[str] = None

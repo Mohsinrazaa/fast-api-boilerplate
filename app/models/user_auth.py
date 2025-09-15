@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.database.db_config import Base
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 
 class UserAuth(Base):
     __tablename__ = "user_auth"
@@ -8,9 +8,9 @@ class UserAuth(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     auth_provider = Column(String(50), nullable=False)
-    password_hash = Column(Text, nullable=True)  # Only for 'password' provider
-    oauth_provider_id = Column(String(255), nullable=True)  # OAuth-specific ID
-    oauth_access_token = Column(Text, nullable=True)  # Optional: Store token if needed
+    password_hash = Column(Text, nullable=True)  
+    oauth_provider_id = Column(String(255), nullable=True)  
+    oauth_access_token = Column(Text, nullable=True) 
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 

@@ -1,16 +1,19 @@
+import logging
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.database.db_config import get_db
-from app.schemas.user import UserResponse
-from app.services.user_service import UserService
 from app.models.user import User
+from sqlalchemy.orm import Session
+from app.schemas.user import UserResponse
+from app.database.db_config import get_db
 from app.utils.jwt import get_current_user
+from app.services.user_service import UserService
+from fastapi import APIRouter, Depends, HTTPException
 from app.utils.response import success_response, error_response
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Fetch the current authenticated user's details
 @router.get("/users/me", response_model=UserResponse)
 def get_me(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
@@ -26,17 +29,20 @@ def get_me(current_user: dict = Depends(get_current_user), db: Session = Depends
             is_verified=user.is_verified,
         )
     except HTTPException as exc:
+        logger.error(exc.detail)
         return error_response(message=str(exc.detail), status_code=exc.status_code)
     except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)
 
-# List all users (admin-only or privileged access)
 @router.get("/users", response_model=List[UserResponse])
 def get_all_users(db: Session = Depends(get_db)):
     try:
         users = UserService.get_all_users(db=db)
         return success_response(message="Users fetched", data=users)
     except HTTPException as exc:
+        logger.error(exc.detail)
         return error_response(message=str(exc.detail), status_code=exc.status_code)
     except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)

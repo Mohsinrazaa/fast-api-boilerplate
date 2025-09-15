@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from pydantic import BaseModel, EmailStr, field_validator, model_validator, root_validator
 from app.utils.crypto_util import encrypt_data
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from app.utils.email_validator import validate_email_format, validate_email_domain, validate_email_mx_records
 
 class SignUpRequest(BaseModel):
@@ -15,26 +15,16 @@ class SignUpRequest(BaseModel):
     @model_validator(mode="before")
     def encrypt_user_id(cls, values):
         if "id" in values:
-            print('VALUES',values)
-
-            # Encrypt the integer ID and convert to string
-            values["id"] = encrypt_data(values["id"])  # Assumed encryption returns a string
-            print('XXXXX',type(values["id"]))
-
+            values["id"] = encrypt_data(values["id"])  
         return values
 
     @model_validator(mode="before")
     def validate_email(cls, values):
         email = values.get('email')
         if email:
-            # Validate the email format
             if not validate_email_format(email):
                 raise HTTPException(status_code=400, detail="Invalid email format.")
-            
-            # Validate the email domain
             validate_email_domain(email)
-
-            # Validate MX records for the domain
             domain = email.split("@")[-1]
             validate_email_mx_records(domain)
         

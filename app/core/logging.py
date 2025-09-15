@@ -3,14 +3,12 @@ import logging
 import time
 import uuid
 from typing import Any, Dict
-
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.types import ASGIApp
 
-
 class JsonFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord) -> str:  # type: ignore[override]
+    def format(self, record: logging.LogRecord) -> str: 
         payload: Dict[str, Any] = {
             "level": record.levelname,
             "message": record.getMessage(),
@@ -22,7 +20,6 @@ class JsonFormatter(logging.Formatter):
         if record.exc_info:
             payload["exc_info"] = self.formatException(record.exc_info)
         return json.dumps(payload, ensure_ascii=False)
-
 
 def configure_logging(level: int = logging.INFO) -> None:
     root = logging.getLogger()
@@ -53,7 +50,6 @@ class RequestIdLoggingMiddleware(BaseHTTPMiddleware):
 
 class RequestIdLogFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        # Attach request_id if available in contextvars (best-effort)
         return True
 
 

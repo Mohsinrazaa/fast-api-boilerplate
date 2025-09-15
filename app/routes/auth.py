@@ -1,25 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-import requests  # Import the correct requests library
+import os
+import logging
 from sqlalchemy.orm import Session
 from app.database.db_config import get_db
 from app.services.auth_service import AuthService
+from fastapi import APIRouter, Depends, HTTPException
 from app.services.google_auth_service import GoogleAuthService
-from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest, SignUpRequest, LoginRequest, GoogleAuthCallback
-from dotenv import load_dotenv
-import os
 from app.utils.response import success_response, error_response
-router = APIRouter(prefix="/auth", tags=["Auth"])
-
-
-
+from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest, SignUpRequest, LoginRequest
+from dotenv import load_dotenv
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-
 
 @router.post("/signup")
 def signup(data: SignUpRequest, db: Session = Depends(get_db)):
@@ -32,10 +32,11 @@ def signup(data: SignUpRequest, db: Session = Depends(get_db)):
         result = auth_service.signup(data)
         return success_response(message="Signup successful", data=result, status_code=201)
     except HTTPException as exc:
+        logger.error(exc.detail)
         return error_response(message=str(exc.detail), status_code=exc.status_code)
-    except Exception as exc:  # Fallback error shape
+    except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)
-
 
 @router.post("/login")
 def login(data: LoginRequest, db: Session = Depends(get_db)):
@@ -51,10 +52,11 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         )
         return success_response(message="Login successful", data=result)
     except HTTPException as exc:
+        logger.error(exc.detail)    
         return error_response(message=str(exc.detail), status_code=exc.status_code)
     except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)
-
 
 @router.get("/google")
 def google_login():
@@ -65,8 +67,8 @@ def google_login():
         url = GoogleAuthService.get_google_auth_url()
         return success_response(message="Google auth URL generated", data={"auth_url": url})
     except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)
-
 
 @router.post("/login_or_signup_with_google")
 def login_or_signup_with_google(code: str, db: Session = Depends(get_db)):
@@ -78,30 +80,11 @@ def login_or_signup_with_google(code: str, db: Session = Depends(get_db)):
         result = auth_service.login_or_signup_with_google(code, db)
         return success_response(message="Google auth successful", data=result)
     except HTTPException as exc:
+        logger.error(exc.detail)
         return error_response(message=str(exc.detail), status_code=exc.status_code)
     except Exception as exc:
+        logger.error(str(exc))
         return error_response(message=str(exc), status_code=400)
-
-
-@router.get("/google/callback")
-def google_callback(code: str, db: Session = Depends(get_db)):
-    """
-    Google OAuth2 callback; exchanges authorization code for tokens and authenticates or registers the user.
-    """
-    auth_service = AuthService(db)
-    try:
-        result = auth_service.login_or_signup_with_google(code, db)
-        return success_response(message="Google callback successful", data=result)
-    except HTTPException as exc:
-        return error_response(message=str(exc.detail), status_code=exc.status_code)
-    except Exception as exc:
-        return error_response(message=str(exc), status_code=400)
-
-
-
-
-
-
 
 @router.post("/forgot-password")
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):

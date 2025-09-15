@@ -1,30 +1,24 @@
-from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
-
 from app.utils.crypto_util import decrypt_data, encrypt_data
-
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 class OTPBase(BaseModel):
     otp_code: str = Field(..., min_length=6, max_length=6)
     user_id: int
     expires_at: datetime
 
-
 class OTPCreate(BaseModel):
     contact: str = Field(..., description="Email or phone number to send the OTP")
     contact_type: str = Field(..., description="Type of contact, e.g., email or phone")
-
 
 class OTPVerify(BaseModel):
     otp_code: str = Field(..., min_length=6, max_length=6, description="The OTP to verify")
     user_id: str
 
-
-
 class OTPResponse(BaseModel):
     id: int
     otp_code: str
-    user_id: str  # This will now be encrypted when sending, decrypted when receiving
+    user_id: str 
     expires_at: datetime
     verified: bool
 
