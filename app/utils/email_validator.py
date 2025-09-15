@@ -2,7 +2,6 @@ import re
 import dns.resolver
 from fastapi import HTTPException
 
-# Define known email providers for domain validation
 KNOWN_EMAIL_PROVIDERS = {"gmail.com", "outlook.com", "yahoo.com", "icloud.com", "hotmail.com"}
 
 def validate_email_format(email: str) -> bool:

@@ -1,8 +1,8 @@
 import os
-from google.auth.transport.requests import Request
-from google.oauth2 import id_token
 import requests
 from dotenv import load_dotenv
+from google.oauth2 import id_token
+from google.auth.transport.requests import Request
 
 load_dotenv()
 
@@ -53,15 +53,13 @@ class GoogleAuthService:
         Get user information from the ID token.
         """
         try:
-            # Correctly verify the token
             id_info = id_token.verify_oauth2_token(id_token_str, Request(), GOOGLE_CLIENT_ID)
-            
-            # Now `id_info` contains the information about the user
+       
             return {
                 "email": id_info["email"],
                 "name": id_info.get("name", ""),
                 "picture": id_info.get("picture", ""),
-                "sub": id_info["sub"],  # Google user ID
+                "sub": id_info["sub"],
             }
         except ValueError as e:
             raise Exception(f"Invalid ID token: {e}")

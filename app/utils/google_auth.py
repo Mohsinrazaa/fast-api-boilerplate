@@ -22,7 +22,7 @@ def verify_google_token(token: str):
             "email": idinfo["email"],
             "name": idinfo.get("name", ""),
             "picture": idinfo.get("picture", ""),
-            "sub": idinfo["sub"],  # Google user ID
+            "sub": idinfo["sub"],
         }
     except ValueError as e:
         raise ValueError(f"Invalid Google token: {e}")
@@ -37,20 +37,3 @@ def get_user_info_from_access_token(access_token: str):
         raise HTTPException(status_code=400, detail="Failed to fetch user info from Google")
 
     return response.json()
-
-
-# def verify_google_token(token: str):
-#     try:
-#         # Verify the token with Google's API
-#         idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-#         if idinfo["aud"] != GOOGLE_CLIENT_ID:
-#             raise ValueError("Could not verify audience.")
-
-#         return {
-#             "email": idinfo["email"],
-#             "name": idinfo.get("name", ""),
-#             "picture": idinfo.get("picture", ""),
-#             "sub": idinfo["sub"],  # Google user ID
-#         }
-#     except ValueError as e:
-#         raise ValueError(f"Invalid Google token: {e}")

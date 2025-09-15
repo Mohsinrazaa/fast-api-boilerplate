@@ -1,4 +1,3 @@
-# utils/connection_manager.py
 from typing import Dict
 from fastapi import WebSocket
 

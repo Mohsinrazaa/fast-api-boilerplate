@@ -1,10 +1,10 @@
-import boto3
 import os
+import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = "us-east-2"  # Default region
+AWS_REGION = "us-east-2" 
 
 def send_sms(to: str, message: str):
     """

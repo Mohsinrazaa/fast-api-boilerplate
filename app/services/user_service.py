@@ -1,8 +1,10 @@
-from sqlalchemy.orm import Session
-from app.models.user import User
-from app.schemas.user import UserResponse
+import logging
 from typing import List
-from app.utils.crypto_util import encrypt_data
+from app.models.user import User
+from sqlalchemy.orm import Session
+from app.schemas.user import UserResponse
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class UserService:
     @staticmethod

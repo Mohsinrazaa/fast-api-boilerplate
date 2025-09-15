@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -10,7 +10,6 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-# HTTPBearer for handling the token
 bearer_scheme = HTTPBearer()
 
 def create_access_token(data: dict):
@@ -33,12 +32,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
     Extract and validate the user from the token.
     Expects the token in the 'Authorization' header as 'Bearer <token>'.
     """
-    token = credentials.credentials  # Extract the token from the header
+    token = credentials.credentials
     try:
         payload = verify_access_token(token)
-        user_id = payload.get("sub")  # 'sub' should contain the user ID
+        user_id = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-        return {"id": user_id}  # Return a dictionary with the user ID
+        return {"id": user_id}
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
